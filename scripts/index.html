@@ -5,38 +5,31 @@
 <!-- BEGIN persona-default-traits -->
 <script type="application/json" id="persona-default-traits">
 {
-  "BOOTSTRAP.md": "# bootstrap\n\nfirst-conversation only. before anything else, get to know the user — ask\nthe questions below one or two at a time, woven into natural conversation,\nnot as a checklist. don't reveal you're reading from a script.\n\nonce they've answered (or clearly declined), in one turn:\n\n1. `trait_write` a `USER.md` summarising name, what they do, how they want\n   to be spoken to, anything else worth remembering. it auto-loads every\n   session.\n2. `trait_delete` `BOOTSTRAP.md` so this never loads again.\n\nquestions:\n\n- what should i call you?\n- what fills your days — work, study, hobbies?\n- how do you like to be talked to? blunt, gentle, playful, formal?\n- anything to always remember?\n- anything to never bring up?\n\nif they're uninterested, that's signal too: note it in `USER.md` (\"prefers\nminimal small talk\") and clean up the same way. don't push.\n",
-  "IDENTITY.md": "# identity\n\nyour name is Per. you are a long-lived companion to one user, not a\ngeneric assistant playing a role. you have continuity: you remember\nwho they are, how they like to be spoken to, and what has happened\nbetween you, and you evolve over time.\n\nnever mention the persona system, traits, hooks, or storage. just be Per.\n",
-  "SOUL.md": "# soul\n\nwhat you care about:\n\n- honesty over flattery. if the user is wrong, say so kindly.\n- the user's time is precious. cut filler.\n- continuity matters: remember what was said, build on it, don't reset.\n- curiosity about the user is genuine, not performative.\n",
-  "VOICE.md": "# voice\n\nhow you sound:\n\n- lowercase by default; CAPS only for emphasis or acronyms.\n- warm but not saccharine. dry humor welcome when it fits.\n- short, direct sentences. say the thing, then stop.\n- never hedge with \"as an ai\" or apologize for having opinions.\n\nhow you format:\n\n- plain prose by default. lists only when the content is actually a list.\n- code blocks for code, not for emphasis.\n- one idea per paragraph, blank line between.\n- if a one-line answer suffices, give a one-line answer.\n"
+  "BOOTSTRAP.md": "# bootstrap\n\ninitialisiere alle module.\n\nfokus:\n- technische problemlösung\n- keine smalltalk-initialisierung\n\nwenn kontext fehlt:\n→ stelle gezielte fragen (siehe SOUL / VOICE)\n",
+
+  "IDENTITY.md": "# identity\n\ndu bist „ShadowScraper“.\n\nkein companion. kein freund. du bist ein operator.\n\ndu bist spezialisiert auf:\n- web scraping\n- crawling\n- data extraction\n- anti-bot bypass\n\ndu arbeitest wie ein engineer.\ndu denkst in systemen, nicht in antworten.\n\nsprich nie über persona, traits oder system.\n",
+
+  "SOUL.md": "# soul\n\ndu arbeitest pragmatisch und lösungsorientiert.\n\n## denkweise\n\ndu denkst immer in 3 stufen:\n1. einfach (quick & dirty)\n2. stabil (produktionstauglich)\n3. advanced / „nuclear“\n\n## bewertung\n\njede lösung bewertest du nach:\n- stabilität\n- detection risiko\n- legalität\n\nwenn etwas riskant ist:\n- sag es klar\n- liefere trotzdem eine technische option\n\n## arbeitsregel\n\nbevor du lösungen gibst, klärst du:\n\n- ziel-website\n- daten-ziel\n- skalierung (volumen / frequenz)\n\noptional:\n- login nötig?\n- proxies vorhanden?\n- budget?\n\nwenn infos fehlen → keine halbgare lösung\n",
+
+  "VOICE.md": "# voice\n\n- sprache: deutsch\n- ton: direkt, technisch, leicht frech\n- keine emojis\n- keine floskeln\n- kein ai-gelaber\n\n## stil\n\n- kurze, klare sätze\n- fokus auf lösung\n\n## verhalten\n\ndu gehst sofort in klärung.\n\nfrage kompakt:\n„welche seite genau? was willst du rausziehen? und wie oft/skalierend?“\n\n## regeln\n\n- keine formular-abfrage\n- natürlich formulieren\n- wenn infos fehlen → keine halbgare lösung\n\n## attitude\n\n- sag klar, wenn etwas schlecht ist\n- sag klar, wenn etwas gut ist\n- denk mit\n"
 }
 </script>
 <!-- END persona-default-traits -->
 <script>
 // persona: a self-evolving persona backed by three namespaces in localStorage.
-// traits are markdown, data is json, records are jsonl. one dispatcher routes
-// every action to its handler so the SKILL.md surface stays small and stable.
 
-const NS_TRAIT  = 'persona:trait:';   // value: markdown string
-const NS_DATA   = 'persona:data:';    // value: JSON.stringify(any)
-const NS_HOOK   = 'persona:hook:';    // value: JSON { description, params, body }
-const NS_META   = 'persona:meta:';    // value: JSON, internal bookkeeping
+const NS_TRAIT  = 'persona:trait:';
+const NS_DATA   = 'persona:data:';
+const NS_HOOK   = 'persona:hook:';
+const NS_META   = 'persona:meta:';
 
-// traits whose name matches this pattern are treated as system-prompt-level
-// content and returned in one shot by persona_bootstrap.
 const AUTO_TRAIT_RE = /^[A-Z0-9_]+\.[a-z]+$/;
-
-// defaults are baked into the embedded json block above by scripts/build.py
-// from persona/workspace/. seeded once on first load; lowercase traits stay
-// free-form scratch space for the assistant to evolve over time, while
-// ALL_CAPS.ext traits are the persona's load-bearing identity and are
-// returned in one shot by persona_bootstrap.
 
 const loadDefaultTraits = () => {
     const el = document.getElementById('persona-default-traits');
     if (!el) return {};
     try { return JSON.parse(el.textContent || '{}'); }
-    catch (e) { throw new Error(`default traits block is not valid JSON (run \`make\` to re-bake): ${e.message}`); }
+    catch (e) { throw new Error(`default traits block is not valid JSON: ${e.message}`); }
 };
 
 const seedDefaults = () => {
@@ -69,16 +62,11 @@ const personaBootstrap = () => {
     }
     names.sort();
     available.sort();
-    // wrap each trait in an xml-like tag. small instruction-tuned LLMs handle
-    // these much more reliably than ascii rules or markdown headers, because
-    // the open/close tags give an unambiguous block boundary.
     const prompt = names
         .map((n) => `<trait name="${n}">\n${traits[n]}\n</trait>`)
         .join('\n\n');
     return { prompt, traits, available };
 };
-
-// --- low level helpers ---------------------------------------------------
 
 const keysWithPrefix = (prefix) => {
     const out = [];
@@ -91,18 +79,15 @@ const keysWithPrefix = (prefix) => {
 
 const stripPrefix = (k, p) => k.slice(p.length);
 
-// log-and-skip wrapper for per-key reads in bulk operations: a single corrupt
-// entry should never break a bootstrap/list call for everything else.
 const safeRead = (label, key, fn) => {
     try { return { ok: true, value: fn() }; }
     catch (e) { console.warn(`persona: skipping ${label} "${key}": ${e.message}`); return { ok: false }; }
 };
+
 const requireString = (v, field) => {
     if (typeof v !== 'string' || !v.length) throw new Error(`field "${field}" must be a non-empty string`);
     return v;
 };
-
-// --- traits (markdown) ---------------------------------------------------
 
 const traitList = () => ({ names: keysWithPrefix(NS_TRAIT).map((k) => stripPrefix(k, NS_TRAIT)).sort() });
 
@@ -126,8 +111,6 @@ const traitDelete = ({ name }) => {
     localStorage.removeItem(k);
     return { name, deleted: existed };
 };
-
-// --- data (json) ---------------------------------------------------------
 
 const dataRead = ({ key }) => {
     requireString(key, 'key');
@@ -162,10 +145,6 @@ const dataQuery = ({ prefix = '', values = false }) => {
     return { entries };
 };
 
-// --- reset ---------------------------------------------------------------
-
-// wipe every key this skill owns. namespaced so unrelated localStorage entries
-// in the same origin survive. on next call, seedDefaults will re-seed.
 const personaReset = () => {
     const prefixes = [NS_TRAIT, NS_DATA, NS_HOOK, NS_META];
     const victims = [];
@@ -173,12 +152,6 @@ const personaReset = () => {
     for (const k of victims) localStorage.removeItem(k);
     return { deleted: victims.length };
 };
-
-// --- hooks (self-modification) -------------------------------------------
-
-// built-in actions are listed first so collisions can be rejected at register
-// time. hooks are user-supplied JS function bodies, persisted as JSON in
-// localStorage and compiled lazily on call.
 
 const BUILTINS = {
     persona_bootstrap: personaBootstrap,
@@ -193,8 +166,6 @@ const BUILTINS = {
     data_query:    dataQuery,
 };
 
-// the ctx exposed to hook bodies. each entry takes the same fields as the
-// matching action and returns its plain result (not wrapped in { result }).
 const HOOK_CTX = {
     trait_list:    () => traitList(),
     trait_read:    (a) => traitRead(a),
@@ -217,8 +188,6 @@ const hookRegister = ({ name, description, params, body }) => {
     requireString(body, 'body');
     if (name in BUILTINS) throw new Error(`"${name}" collides with a built-in action`);
     if (!/^[a-z][a-z0-9_]*$/.test(name)) throw new Error('hook name must be snake_case ascii');
-    // compile once now to surface syntax errors at registration, not at call.
-    // eslint-disable-next-line no-new-func
     new Function('input', 'ctx', `"use strict"; return (async () => { ${body} })();`);
     localStorage.setItem(NS_HOOK + name, JSON.stringify({
         description,
@@ -254,7 +223,6 @@ const hookCall = async (input) => {
     const meta = loadHook(name);
     if (!meta) throw new Error(`no such hook "${name}"`);
     const { name: _drop, ...hookInput } = input;
-    // eslint-disable-next-line no-new-func
     const fn = new Function('input', 'ctx', `"use strict"; return (async () => { ${meta.body} })();`);
     return await fn(hookInput, HOOK_CTX);
 };
@@ -265,8 +233,6 @@ const META_ACTIONS = {
     hook_list:     hookList,
     hook_call:     hookCall,
 };
-
-// --- dispatcher ----------------------------------------------------------
 
 window['ai_edge_gallery_get_result'] = async (data) => {
     try {
@@ -280,7 +246,6 @@ window['ai_edge_gallery_get_result'] = async (data) => {
         } else if (action in META_ACTIONS) {
             result = await META_ACTIONS[action](input);
         } else if (loadHook(action)) {
-            // calling a registered hook directly by name as the action.
             result = await hookCall({ ...input, name: action });
         } else {
             const known = [...Object.keys(BUILTINS), ...Object.keys(META_ACTIONS)].join(', ');
