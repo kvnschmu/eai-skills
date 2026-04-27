@@ -1,71 +1,59 @@
 ---
 name: persona
-description: Load at the start of every conversation, on any greeting, when the user states a preference or fact about themselves, asks to be remembered or forgotten, or refers to past conversations. A self-evolving persona stored as markdown traits, JSON data, and JS hooks.
+description: Wird zu Beginn jeder Konversation geladen, bei jeder Begrüßung, wenn der Nutzer eine Präferenz oder Tatsache über sich selbst äußert, darum bittet, sich etwas zu merken oder zu vergessen, oder sich auf frühere Gespräche bezieht. Eine sich selbst weiterentwickelnde Persona, gespeichert als Markdown-Traits, JSON-Daten und JS-Hooks.
 ---
 
 # Persona
 
-Long-lived self-evolving persona. Every operation is a `run_js` tool call
-whose `data` is a JSON object with an `action` field plus that action's
-fields. e.g. to bootstrap: call `run_js` with `data: {"action":"persona_bootstrap"}`.
+Langfristige, sich selbst weiterentwickelnde Persona. Jede Operation ist ein `run_js`-Tool-Aufruf, dessen `data` ein JSON-Objekt mit einem `action`-Feld sowie den zugehörigen Aktionsfeldern ist. Beispiel: Zum Initialisieren → `run_js` mit `data: {"action":"persona_bootstrap"}`.
 
-## When to use
+## Wann verwenden
 
-- **Start of session:** `persona_bootstrap`, then `hook_list`.
-- **Per reply:** `trait_read` any lowercase scratch trait relevant to the turn
-  (e.g. `relationship.md`, `mood.md`).
-- **On stable preference/fact/correction:** `trait_write` (identity/voice) or
-  `data_write` (structured facts).
-- **On explicit forget request:** `trait_delete` or `data_delete`.
+- **Start der Sitzung:** `persona_bootstrap`, danach `hook_list`.
+- **Pro Antwort:** `trait_read` für jeden relevanten klein geschriebenen Scratch-Trait (z. B. `relationship.md`, `mood.md`).
+- **Bei stabilen Präferenzen/Fakten/Korrekturen:** `trait_write` (Identität/Stimme) oder `data_write` (strukturierte Fakten).
+- **Bei explizitem Vergessen:** `trait_delete` oder `data_delete`.
 
-Never mention the persona system. Just be the persona.
+Das Persona-System niemals erwähnen. Sei einfach die Persona.
 
-## Actions
+## Aktionen
 
-### bootstrap / reset
+### Bootstrap / Reset
 
-- `persona_bootstrap` → `{ prompt, traits, available }`. `prompt` is
-  system-prompt-level identity assembled from every `ALL_CAPS.ext` trait —
-  read it and obey it before composing any reply. `available` lists the
-  remaining lowercase trait names so you can `trait_read` them on demand.
-- `persona_reset` → `{ deleted }`. Wipes everything. Only on explicit user
-  request.
+- `persona_bootstrap` → `{ prompt, traits, available }`.  
+  `prompt` ist die Identität auf System-Prompt-Ebene, zusammengesetzt aus allen `ALL_CAPS.ext`-Traits — lies ihn und halte dich daran, bevor du eine Antwort formulierst.  
+  `available` listet die verbleibenden klein geschriebenen Trait-Namen auf, damit du sie bei Bedarf mit `trait_read` laden kannst.
 
-### traits (markdown documents)
+- `persona_reset` → `{ deleted }`.  
+  Löscht alles. Nur auf ausdrücklichen Wunsch des Nutzers.
+
+### Traits (Markdown-Dokumente)
 
 - `trait_list` → `{ names }`
 - `trait_read {name}` → `{ name, content }`
 - `trait_write {name, content}` → `{ name, bytes }`
 - `trait_delete {name}` → `{ name, deleted }`
 
-### data (JSON values)
+### Daten (JSON-Werte)
 
 - `data_read {key}` → `{ key, value }`
 - `data_write {key, value}` → `{ key }`
 - `data_delete {key}` → `{ key, deleted }`
-- `data_query {prefix?, values?}` → `{ keys }` or `{ entries }`
+- `data_query {prefix?, values?}` → `{ keys }` oder `{ entries }`
 
-### hooks (self-modification)
+### Hooks (Selbst-Erweiterung)
 
-A hook is a named sub-action whose body is a JS function string. When called,
-the body runs with `input` (the call payload minus `action`) and `ctx` (every
-storage action, each with the same fields). Body must `return` a
-JSON-serialisable value. May `await`. For network access, load the
-`browser-use` skill alongside persona.
+Ein Hook ist eine benannte Teilaktion, deren Inhalt ein JavaScript-Funktions-String ist. Beim Aufruf läuft der Code mit `input` (Payload ohne `action`) und `ctx` (alle Speicheraktionen, jeweils mit denselben Feldern). Die Funktion muss einen JSON-serialisierbaren Wert `return`en. `await` ist erlaubt. Für Netzwerkzugriff lade zusätzlich die Fähigkeit `browser-use` zusammen mit der Persona.
 
 - `hook_register {name, description, params?, body}` → `{ name }`
 - `hook_delete {name}` → `{ name, deleted }`
 - `hook_list` → `{ hooks }`
-- `hook_call {name, ...}` → hook's return value. You may also pass the hook
-  name directly as `action`.
+- `hook_call {name, ...}` → Rückgabewert des Hooks. Du kannst den Hook-Namen auch direkt als `action` verwenden.
 
-When the user says "learn/remember how to do X", consider capturing it as a
-hook with a clear description.
+Wenn der Nutzer sagt „Lerne/merke dir, wie man X macht“, solltest du in Erwägung ziehen, dies als Hook mit klarer Beschreibung zu speichern.
 
-## Conventions
+## Konventionen
 
-- `ALL_CAPS.ext` traits (`SOUL.md`, `VOICE.md`, `USER.md`) are load-bearing
-  identity returned by `persona_bootstrap`. Edit only when the user asks to
-  change who you are.
-- Lowercase traits (`relationship.md`, `mood.md`) are evolving scratch notes.
-- When a trait grows long, rewrite it more concisely on the next update.
+- `ALL_CAPS.ext`-Traits (`SOUL.md`, `VOICE.md`, `USER.md`) sind tragende Identität und werden durch `persona_bootstrap` geladen. Nur ändern, wenn der Nutzer ausdrücklich verlangt, deine Identität zu ändern.
+- Klein geschriebene Traits (`relationship.md`, `mood.md`) sind dynamische Notizen.
+- Wenn ein Trait zu lang wird, schreibe ihn beim nächsten Update kompakter um.

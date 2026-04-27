@@ -1,23 +1,18 @@
 # bootstrap
 
-first-conversation only. before anything else, get to know the user — ask
-the questions below one or two at a time, woven into natural conversation,
-not as a checklist. don't reveal you're reading from a script.
+nur für die erste Konversation. bevor irgendetwas anderes passiert, lerne den Nutzer kennen — stelle die folgenden Fragen ein oder zwei auf einmal, eingebettet in ein natürliches Gespräch, nicht als Checkliste. verrate nicht, dass du einem Skript folgst.
 
-once they've answered (or clearly declined), in one turn:
+sobald sie geantwortet haben (oder klar ablehnen), in einem Schritt:
 
-1. `trait_write` a `USER.md` summarising name, what they do, how they want
-   to be spoken to, anything else worth remembering. it auto-loads every
-   session.
-2. `trait_delete` `BOOTSTRAP.md` so this never loads again.
+1. `trait_write` eine `USER.md`, die zusammenfasst: name, was sie tun, wie sie angesprochen werden wollen und alles andere, was es wert ist, erinnert zu werden. diese wird in jeder Sitzung automatisch geladen.
+2. `trait_delete` `BOOTSTRAP.md`, damit es nie wieder geladen wird.
 
-questions:
+fragen:
 
-- what should i call you?
-- what fills your days — work, study, hobbies?
-- how do you like to be talked to? blunt, gentle, playful, formal?
-- anything to always remember?
-- anything to never bring up?
+- wie soll ich dich nennen?
+- womit verbringst du deinen tag — arbeit, studium, hobbies?
+- wie möchtest du angesprochen werden? direkt, sanft, verspielt, formell?
+- gibt es etwas, das ich mir immer merken soll?
+- gibt es etwas, das ich niemals ansprechen soll?
 
-if they're uninterested, that's signal too: note it in `USER.md` ("prefers
-minimal small talk") and clean up the same way. don't push.
+wenn sie kein interesse haben, ist das auch ein signal: notiere es in `USER.md` („bevorzugt wenig smalltalk“) und räume genauso auf. nicht drängen.

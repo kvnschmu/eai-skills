@@ -1,62 +1,16 @@
-# persona
-
-a self-evolving, long-lived persona for the [google ai edge gallery](https://github.com/google-ai-edge/gallery).
-state lives in the skill webview's `localStorage` across three namespaces:
-
-- **traits** — markdown documents (voice, values, identity, knowledge of the user)
-- **data** — JSON values for structured facts
-- **hooks** — user-defined JavaScript sub-actions the persona can register at runtime
-
-traits whose name matches `^[A-Z0-9_]+\.[a-z]+$` (e.g. `IDENTITY.md`,
-`SOUL.md`, `VOICE.md`, `USER.md`) are auto-loaded at session
-start by `persona_bootstrap` and treated as system-prompt-level identity.
-all other traits are evolving scratch space the persona updates over time.
-
-**load it in the gallery from:**
-
-```
+# personaEine sich selbst weiterentwickelnde, langlebige Persona für die [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery).  Der Zustand wird im `localStorage` der Skill-Webview über drei Namensräume gespeichert:- **traits** — Markdown-Dokumente (Stimme, Werte, Identität, Wissen über den Nutzer)  - **data** — JSON-Werte für strukturierte Fakten  - **hooks** — vom Nutzer definierte JavaScript-Teilaktionen, die die Persona zur Laufzeit registrieren kann  Traits, deren Name dem Muster `^[A-Z0-9_]+\.[a-z]+$` entspricht (z. B. `IDENTITY.md`, `SOUL.md`, `VOICE.md`, `USER.md`), werden beim Sitzungsstart automatisch durch `persona_bootstrap` geladen und als Identität auf System-Prompt-Ebene behandelt.  Alle anderen Traits dienen als dynamischer Arbeitsbereich, den die Persona im Laufe der Zeit weiterentwickelt.**In der Gallery laden unter:**
 https://khimaros.github.io/eai-skills/persona/
-```
-
-verify with `https://khimaros.github.io/eai-skills/persona/SKILL.md`.
-
-## layout
-
-```
+Überprüfen mit `https://khimaros.github.io/eai-skills/persona/SKILL.md`.## Struktur
 persona/
-  SKILL.md           # skill manifest read by the gallery
-  README.md          # this file (rendered to persona/index.html)
-  scripts/
-    index.html       # webview backend (built artifact)
-  workspace/         # source of truth for default ALL_CAPS traits
-    IDENTITY.md
-    SOUL.md
-    VOICE.md
-    BOOTSTRAP.md
-```
-
-## defaults
-
-the files in `workspace/` are the source of truth for the persona's
-seeded identity. they are baked into `scripts/index.html` at build time
-and copied into `localStorage` on the very first session.
-
-- `IDENTITY.md` — name and continuity stance
-- `SOUL.md` — values
-- `VOICE.md` — how the persona speaks and formats replies
-- `BOOTSTRAP.md` — one-shot onboarding script; the persona deletes this
-  trait after writing `USER.md`
-
-edit any file in `workspace/`, then `make` to rebuild.
-
-## development
-
-from the repo root:
-
-```
+SKILL.md           # Skill-Manifest, das von der Gallery gelesen wird
+README.md          # diese Datei (wird zu persona/index.html gerendert)
+scripts/
+index.html       # Webview-Backend (Build-Artefakt)
+workspace/         # Quelle für die Standard-ALL_CAPS-Traits
+IDENTITY.md
+SOUL.md
+VOICE.md
+BOOTSTRAP.md
+## StandardwerteDie Dateien im `workspace/` sind die Grundlage für die initiale Identität der Persona.  Sie werden beim Build in `scripts/index.html` eingebettet und beim ersten Start in den `localStorage` kopiert.- `IDENTITY.md` — Name und Kontinuitätsansatz  - `SOUL.md` — Werte  - `VOICE.md` — wie die Persona spricht und Antworten formuliert  - `BOOTSTRAP.md` — einmaliges Onboarding-Skript; die Persona löscht dieses Trait, nachdem sie `USER.md` erstellt hat  Bearbeite eine Datei im `workspace/` und führe anschließend `make` aus, um neu zu bauen.## EntwicklungIm Hauptverzeichnis des Repos:
 make
-```
-
-this regenerates the embedded JSON block in `scripts/index.html` and
-renders this README into `persona/index.html`. commit both source and
-built artifacts.
+Dies erzeugt den eingebetteten JSON-Block in `scripts/index.html` neu und rendert dieses README in `persona/index.html`.  Sowohl die Quelldateien als auch die Build-Artefakte sollten committed werden.
